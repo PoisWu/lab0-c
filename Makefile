@@ -42,16 +42,30 @@ OBJS := qtest.o report.o console.o harness.o queue.o \
         shannon_entropy.o \
         linenoise.o web.o
 
+# MYOBJS := mytest.o report.o console.o harness.o queue.o \
+#         random.o dudect/constant.o dudect/fixture.o dudect/ttest.o \
+#         shannon_entropy.o \
+#         linenoise.o web.o
+
 deps := $(OBJS:%.o=.%.o.d)
+
+# mytest: $(MYOBJS)
+# 	$(VECHO) "  LD\t$@\n"
+# 	$(Q)$(CC) $(LDFLAGS) -o $@ $^ -lm
 
 qtest: $(OBJS)
 	$(VECHO) "  LD\t$@\n"
 	$(Q)$(CC) $(LDFLAGS) -o $@ $^ -lm
 
+# mytest: $(MYOBJS)
+# 	$(VECHO) "  LD\t$@\n"
+# 	$(Q)$(CC) $(LDFLAGS) -o $@ $^ -lm
+
 %.o: %.c
 	@mkdir -p .$(DUT_DIR)
 	$(VECHO) "  CC\t$@\n"
 	$(Q)$(CC) -o $@ $(CFLAGS) -c -MMD -MF .$@.d $<
+
 
 check: qtest
 	./$< -v 3 -f traces/trace-eg.cmd
