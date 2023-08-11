@@ -231,6 +231,29 @@ void q_reverse(struct list_head *head)
 void q_reverseK(struct list_head *head, int k)
 {
     // https://leetcode.com/problems/reverse-nodes-in-k-group/
+    if (!head || list_empty(head))
+        return;
+    // Need to use the list_cut_position
+    // Idea: cut list -> reverse -> inject it back
+    struct list_head *q_tmp = q_new();
+    struct list_head *cur = head;
+    struct list_head *safe;
+    while (true) {
+        struct list_head *ptr_beg = cur->prev;
+        // ptr_beg = cur;
+        for (int i = 0; i < k && cur != head; i++, cur = cur->next)
+            ;
+        if (cur == head)
+            break;
+        safe = cur->next;
+        list_cut_position(q_tmp, ptr_beg, cur);
+        q_reverse(q_tmp);
+        list_splice_tail(q_tmp, safe);
+        cur = safe;
+        INIT_LIST_HEAD(q_tmp);
+    }
+
+    free(q_tmp);
 }
 
 /* Sort elements of queue in ascending/descending order */
