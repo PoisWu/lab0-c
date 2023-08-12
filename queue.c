@@ -154,43 +154,24 @@ bool q_delete_dup(struct list_head *head)
 
     if (!head || list_empty(head))
         return false;
+    // The list is sorted already!!
+    element_t *cur, *next;
 
-    struct list_head *dup_list = q_new();
-    element_t *cur_entry, *safe_entry;
-    list_for_each_entry_safe (cur_entry, safe_entry, head, list) {
-        // compare with dup_list
-        int isRemovedCur = 0;
-        element_t *dup_entry;
-        list_for_each_entry (dup_entry, dup_list, list) {
-            if (strcmp(dup_entry->value, cur_entry->value) == 0) {
-                // delete cur_entry node
-                list_del(&cur_entry->list);
-                free(cur_entry->value);
-                free(cur_entry);
-                isRemovedCur = 1;
-                break;
-            }
-        }
-        // compare with prev
-        if (!isRemovedCur) {
-            element_t *pre_entry;
-            list_for_each_entry (pre_entry, head, list) {
-                if (pre_entry == cur_entry)
-                    break;
-                if (strcmp(pre_entry->value, cur_entry->value) == 0) {
-                    // delete cur_entry node
-                    list_del(&cur_entry->list);
-                    free(cur_entry->value);
-                    free(cur_entry);
-                    // move pre_entry to dup_list;
-                    list_move(&pre_entry->list, dup_list);
-                    break;
-                }
-            }
+    int isdup = 0;
+    list_for_each_entry_safe (cur, next, head, list) {
+        if (cur->list.next != head && strcmp(cur->value, next->value) == 0) {
+            // delete cur
+            list_del(&cur->list);
+            free(cur->value);
+            free(cur);
+            isdup = 1;
+        } else if (isdup) {
+            list_del(&cur->list);
+            free(cur->value);
+            free(cur);
+            isdup = 0;
         }
     }
-    q_free(dup_list);
-
     return true;
 }
 
