@@ -138,11 +138,7 @@ bool q_delete_mid(struct list_head *head)
 
     element_t *mid_entry = list_entry(slow, element_t, list);
     list_del(slow);
-
-    // free the associate element_t
-    // printf("%s\n", mid_entry->value);
-    free(mid_entry->value);
-    free(mid_entry);
+    q_release_element(mid_entry);
 
     return true;
 }
@@ -162,13 +158,11 @@ bool q_delete_dup(struct list_head *head)
         if (cur->list.next != head && strcmp(cur->value, next->value) == 0) {
             // delete cur
             list_del(&cur->list);
-            free(cur->value);
-            free(cur);
+            q_release_element(cur);
             isdup = 1;
         } else if (isdup) {
             list_del(&cur->list);
-            free(cur->value);
-            free(cur);
+            q_release_element(cur);
             isdup = 0;
         }
     }
@@ -216,25 +210,24 @@ void q_reverseK(struct list_head *head, int k)
         return;
     // Need to use the list_cut_position
     // Idea: cut list -> reverse -> inject it back
-    struct list_head *q_tmp = q_new();
-    struct list_head *cur = head;
-    struct list_head *safe;
-    while (true) {
-        struct list_head *ptr_beg = cur->prev;
-        // ptr_beg = cur;
-        for (int i = 0; i < k && cur != head; i++, cur = cur->next)
-            ;
-        if (cur == head)
-            break;
-        safe = cur->next;
-        list_cut_position(q_tmp, ptr_beg, cur);
-        q_reverse(q_tmp);
-        list_splice_tail(q_tmp, safe);
-        cur = safe;
-        INIT_LIST_HEAD(q_tmp);
-    }
+    int cou = 0;
+    struct list_head *cur, *safe, *start = head;
+    struct list_head tmp_list;
+    INIT_LIST_HEAD(&tmp_list);
 
-    free(q_tmp);
+    list_for_each_safe (cur, safe, head) {
+        if (cou < k - 1) {
+            cou++;
+            continue;
+        }
+        // Reverse the element from ]start, cur] <- k elements
+        list_cut_position(&tmp_list, start, cur);
+        q_reverse(&tmp_list);
+        list_splice_tail(&tmp_list, safe);  // splice before safe
+        // INIT_LIST_HEAD(&tmp_list);
+        start = safe->prev;  // update safe
+        cou = 0;
+    }
 }
 
 /* Sort elements of queue in ascending/descending order */
