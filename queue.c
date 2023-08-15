@@ -230,31 +230,41 @@ void q_reverseK(struct list_head *head, int k)
     }
 }
 
-
-// merge twos orted list list1, list2 into list1
-struct list_head *mergeTwoList(struct list_head *L1,
-                               struct list_head *L2,
-                               bool descend)
+// Merge sorted left and right to head
+void *mergeTwoLists(struct list_head *left,
+                    struct list_head *right,
+                    struct list_head *head,
+                    bool descend)
 {
-    struct list_head *head = q_new();
-    struct list_head *cur1, *cur2, *saf1, *saf2;
-    for (cur1 = L1->next, cur2 = L2->next, saf1 = cur1->next, saf2 = cur2->next;
-         cur1 != L1 && cur2 != L2;
-         cur1 = saf1, saf1 = cur1->next, cur2 = saf2, saf2 = cur2->next) {
-        element_t *entry1 = list_entry(cur1, element_t, list);
-        element_t *entry2 = list_entry(cur2, element_t, list);
-        if ((strcmp(entry1->value, entry2->value) <= 0) != descend) {
-            list_move_tail(&entry1->list, head);
-        } else {
-            list_move_tail(&entry2->list, head);
-        }
+    if (!left || !right || !head)
+        return NULL;
+    // struct list_head **ptr = &head;
+    INIT_LIST_HEAD(head);
+    while (!list_empty(left) && !list_empty(right)) {
+        struct list_head *node;
+        element_t *entry_left = list_entry(left->next, element_t, list);
+        element_t *entry_right = list_entry(right->next, element_t, list);
+        node = (strcmp(entry_left->value, entry_right->value) <= 0) != descend
+                   ? left
+                   : right;
+        list_move_tail(node->next, head);
     }
+    list_splice(left, head);
+    list_splice(right, head);
     return head;
+}
+
+
+void merge_sort(struct list_head *head, bool descend)
+{
+    // devide and conqueur
 }
 
 // Implementation of bubble_sort
 void bubble_sort(struct list_head *head, bool descend)
 {
+    if (!head)
+        return;
     int n = q_size(head);
     for (int i = 0; i < n - 1; i++) {
         element_t *cur = list_entry(head->next, element_t, list);
@@ -331,5 +341,6 @@ int q_descend(struct list_head *head)
 int q_merge(struct list_head *head, bool descend)
 {
     // https://leetcode.com/problems/merge-k-sorted-lists/
+
     return 0;
 }
