@@ -293,7 +293,7 @@ int q_ascend(struct list_head *head)
         element_t *cur_entry = list_entry(cur, element_t, list);
         if (strcmp(cur_entry->value, str_tmp) > 0) {
             list_del(cur);
-            // q_release_element(
+            q_release_element(cur_entry);
         } else {
             cou++;
             str_tmp = cur_entry->value;
@@ -317,7 +317,7 @@ int q_descend(struct list_head *head)
         element_t *cur_entry = list_entry(cur, element_t, list);
         if (strcmp(cur_entry->value, str_tmp) < 0) {
             list_del(cur);
-            // q_release_element(
+            q_release_element(cur_entry);
         } else {
             cou++;
             str_tmp = cur_entry->value;
