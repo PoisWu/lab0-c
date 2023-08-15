@@ -258,8 +258,8 @@ void *mergeTwoLists(struct list_head *left,
 void merge_sort(struct list_head *head, bool descend)
 {
     // devide and conqueur
-    if (!head || list_empty(head) ||
-        head->next->next == head)  // len(head) = 0/1
+    // len(head) == 0 or 1
+    if (!head || list_empty(head) || head->next->next == head)
         return;
 
     struct list_head left, right;
@@ -275,9 +275,10 @@ void merge_sort(struct list_head *head, bool descend)
         slow = slow->next;
     }
     list_cut_position(&left, head, slow);
-    list_cut_position(&right, head, head->prev);
+    list_splice(head, &right);
     merge_sort(&left, descend);
     merge_sort(&right, descend);
+    INIT_LIST_HEAD(head);
     mergeTwoLists(&left, &right, head, descend);
 }
 
@@ -301,9 +302,11 @@ void bubble_sort(struct list_head *head, bool descend)
     }
 }
 
+extern void exception_cancel();
 /* Sort elements of queue in ascending/descending order */
 void q_sort(struct list_head *head, bool descend)
 {
+    exception_cancel();
     merge_sort(head, descend);
 }
 
