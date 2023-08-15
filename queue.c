@@ -230,8 +230,51 @@ void q_reverseK(struct list_head *head, int k)
     }
 }
 
+
+// merge twos orted list list1, list2 into list1
+struct list_head *mergeTwoList(struct list_head *L1,
+                               struct list_head *L2,
+                               bool descend)
+{
+    struct list_head *head = q_new();
+    struct list_head *cur1, *cur2, *saf1, *saf2;
+    for (cur1 = L1->next, cur2 = L2->next, saf1 = cur1->next, saf2 = cur2->next;
+         cur1 != L1 && cur2 != L2;
+         cur1 = saf1, saf1 = cur1->next, cur2 = saf2, saf2 = cur2->next) {
+        element_t *entry1 = list_entry(cur1, element_t, list);
+        element_t *entry2 = list_entry(cur2, element_t, list);
+        if ((strcmp(entry1->value, entry2->value) <= 0) != descend) {
+            list_move_tail(&entry1->list, head);
+        } else {
+            list_move_tail(&entry2->list, head);
+        }
+    }
+    return head;
+}
+
+// Implementation of bubble_sort
+void bubble_sort(struct list_head *head, bool descend)
+{
+    int n = q_size(head);
+    for (int i = 0; i < n - 1; i++) {
+        element_t *cur = list_entry(head->next, element_t, list);
+        element_t *nxt = list_entry(cur->list.next, element_t, list);
+        for (int j = 0; j < n - i - 1; j++) {
+            if ((strcmp(cur->value, nxt->value) > 0) != descend) {
+                list_move(&cur->list, &nxt->list);
+            } else {
+                cur = nxt;
+            }
+            nxt = list_entry(cur->list.next, element_t, list);
+        }
+    }
+}
+
 /* Sort elements of queue in ascending/descending order */
-void q_sort(struct list_head *head, bool descend) {}
+void q_sort(struct list_head *head, bool descend)
+{
+    bubble_sort(head, descend);
+}
 
 /* Remove every node which has a node with a strictly less value anywhere to
  * the right side of it */
