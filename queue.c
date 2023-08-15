@@ -258,6 +258,27 @@ void *mergeTwoLists(struct list_head *left,
 void merge_sort(struct list_head *head, bool descend)
 {
     // devide and conqueur
+    if (!head || list_empty(head) ||
+        head->next->next == head)  // len(head) = 0/1
+        return;
+
+    struct list_head left, right;
+    INIT_LIST_HEAD(&left);
+    INIT_LIST_HEAD(&right);
+
+    struct list_head *slow = head->next;
+    struct list_head *fast = head->next;
+
+    // For loop end when fast hit head
+    while (fast != head && fast->next != head) {
+        fast = fast->next->next;
+        slow = slow->next;
+    }
+    list_cut_position(&left, head, slow);
+    list_cut_position(&right, head, head->prev);
+    merge_sort(&left, descend);
+    merge_sort(&right, descend);
+    mergeTwoLists(&left, &right, head, descend);
 }
 
 // Implementation of bubble_sort
@@ -283,7 +304,7 @@ void bubble_sort(struct list_head *head, bool descend)
 /* Sort elements of queue in ascending/descending order */
 void q_sort(struct list_head *head, bool descend)
 {
-    bubble_sort(head, descend);
+    merge_sort(head, descend);
 }
 
 /* Remove every node which has a node with a strictly less value anywhere to
