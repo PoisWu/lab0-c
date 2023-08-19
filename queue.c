@@ -118,6 +118,7 @@ element_t *q_remove_tail(struct list_head *head, char *sp, size_t bufsize)
 /* Return number of elements in queue */
 int q_size(struct list_head *head)
 {
+    // treat NULL
     int size = 0;
     struct list_head *node;
     if (head) {
@@ -385,9 +386,44 @@ int q_descend(struct list_head *head)
 
 /* Merge all the queues into one sorted queue, which is in ascending/descending
  * order */
+/**
+ * queue_contex_t - The context managing a chain of queues
+ * @q: pointer to the head of the queue
+ * @chain: used by chaining the heads of queues
+ * @size: the length of this queue
+ * @id: the unique identification number
+ */
+
 int q_merge(struct list_head *head, bool descend)
 {
     // https://leetcode.com/problems/merge-k-sorted-lists/
+    if (!head || list_empty(head))
+        return 0;
+    struct list_head queue_tmp;
+    struct list_head *cur, *follow, *safe;
+    // if nb(queue) > 1
+    while (!list_is_singular(head)) {
+        for (cur = head->next, follow = cur->next, safe = follow->next;
+             cur != head && follow != head;
+             cur = safe, follow = cur->next, safe = follow->next) {
+            struct list_head *q1 = list_entry(cur, queue_contex_t, chain)->q;
+            struct list_head *q2 = list_entry(follow, queue_contex_t, chain)->q;
+            // merge q1,q2 into q1;
+            if (!q1)
+                list_del(cur);
+            if (!q2)
+                list_del(follow);
 
-    return 0;
+            if (q1 && q2) {
+                INIT_LIST_HEAD(&queue_tmp);
+                // move q1 -> queue_tmp
+                list_splice(q1, &queue_tmp);
+                // mergeTwoList(q2,queue_tmp, q1)
+                mergeTwoLists(q2, &queue_tmp, q1, descend);
+                // del(q2)
+                list_del(follow);
+            }
+        }
+    }
+    return q_size(list_entry(head->next, queue_contex_t, chain)->q);
 }
