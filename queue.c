@@ -12,14 +12,15 @@
  */
 
 /* Create an empty queue */
+extern void exception_cancel();
 
 void print_list(struct list_head *head)
 {
     element_t *node;
     list_for_each_entry (node, head, list) {
-        printf("%s\n", node->value);
+        printf("%s ", node->value);
     }
-    printf("------------------\n");
+    printf("\n------------------\n");
 }
 struct list_head *q_new()
 {
@@ -119,6 +120,7 @@ element_t *q_remove_tail(struct list_head *head, char *sp, size_t bufsize)
 int q_size(struct list_head *head)
 {
     // treat NULL
+    exception_cancel();
     int size = 0;
     struct list_head *node;
     if (head) {
@@ -183,6 +185,7 @@ bool q_delete_dup(struct list_head *head)
 void q_swap(struct list_head *head)
 {
     // https://leetcode.com/problems/swap-nodes-in-pairs/
+
     if (!head)
         return;
     struct list_head *cur, *follow, *safe;
@@ -326,11 +329,9 @@ void bubble_sort(struct list_head *head, bool descend)
     }
 }
 
-extern void exception_cancel();
 /* Sort elements of queue in ascending/descending order */
 void q_sort(struct list_head *head, bool descend)
 {
-    exception_cancel();
     merge_sort(head, descend);
 }
 
@@ -394,36 +395,63 @@ int q_descend(struct list_head *head)
  * @id: the unique identification number
  */
 
+
 int q_merge(struct list_head *head, bool descend)
 {
     // https://leetcode.com/problems/merge-k-sorted-lists/
+    exception_cancel();
     if (!head || list_empty(head))
         return 0;
     struct list_head queue_tmp;
-    struct list_head *cur, *follow, *safe;
+    int n = q_size(head);
     // if nb(queue) > 1
-    while (!list_is_singular(head)) {
-        for (cur = head->next, follow = cur->next, safe = follow->next;
-             cur != head && follow != head;
-             cur = safe, follow = cur->next, safe = follow->next) {
-            struct list_head *q1 = list_entry(cur, queue_contex_t, chain)->q;
-            struct list_head *q2 = list_entry(follow, queue_contex_t, chain)->q;
-            // merge q1,q2 into q1;
-            if (!q1)
-                list_del(cur);
-            if (!q2)
-                list_del(follow);
-
-            if (q1 && q2) {
-                INIT_LIST_HEAD(&queue_tmp);
-                // move q1 -> queue_tmp
-                list_splice(q1, &queue_tmp);
-                // mergeTwoList(q2,queue_tmp, q1)
-                mergeTwoLists(q2, &queue_tmp, q1, descend);
-                // del(q2)
-                list_del(follow);
-            }
+    struct list_head *cur_back = head->prev;
+    while (n > 1) {
+        for (int i = 0; i < n / 2; i++) {
+            struct list_head *cur_front = head->next;
+            struct list_head *q1 =
+                list_entry(cur_front, queue_contex_t, chain)->q;
+            struct list_head *q2 =
+                list_entry(cur_back, queue_contex_t, chain)->q;
+            INIT_LIST_HEAD(&queue_tmp);
+            list_splice(q1, &queue_tmp);
+            mergeTwoLists(q2, &queue_tmp, q1, descend);
+            cur_front = cur_front->next;
+            cur_back = cur_back->prev;
         }
+        n = (n + 1) / 2;
     }
-    return q_size(list_entry(head->next, queue_contex_t, chain)->q);
+    // while (head->next->next != head) {
+    //     // printf("Begin: size of chain %d\n", q_size(head));
+    //     for (cur = head->next, fol = cur->next, safe = fol->next;
+    //          cur != head && fol != head;
+    //          cur = safe, fol = cur->next, safe = fol->next) {
+    //         struct list_head *q1 = list_entry(cur, queue_contex_t, chain)->q;
+    //         struct list_head *q2 = list_entry(fol, queue_contex_t, chain)->q;
+    //         // merge q1,q2 into q1;
+    //         if (!q1)
+    //             // list_del(cur);
+    //         if (!q2)
+    //             // list_del(fol);
+    //
+    //         if (q1 && q2) {
+    //             INIT_LIST_HEAD(&queue_tmp);
+    //             // move q1 -> queue_tmp
+    //             list_splice(q1, &queue_tmp);
+    //             // mergeTwoList(q2,queue_tmp, q1)
+    //             mergeTwoLists(q2, &queue_tmp, q1, descend);
+    //             // del(q2)
+    //             // list_del(fol);
+    //         }
+    //         // print_list(q1);
+    //         // print_list(q2);
+    //         // printf("After: size of chain %d\n", q_size(head));
+    //         // getchar();
+    //     }
+    // }
+    printf("End: size of chain %d\n", q_size(head));
+    struct list_head *queue = list_entry(head->next, queue_contex_t, chain)->q;
+    print_list(queue);
+    getchar();
+    return q_size(queue);
 }
