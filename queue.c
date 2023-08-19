@@ -12,6 +12,15 @@
  */
 
 /* Create an empty queue */
+
+void print_list(struct list_head *head)
+{
+    element_t *node;
+    list_for_each_entry (node, head, list) {
+        printf("%s\n", node->value);
+    }
+    printf("------------------\n");
+}
 struct list_head *q_new()
 {
     // Always need to check malloc return NULL
@@ -230,12 +239,17 @@ void q_reverseK(struct list_head *head, int k)
     }
 }
 
+
 // Merge sorted left and right to head
 void *mergeTwoLists(struct list_head *left,
                     struct list_head *right,
                     struct list_head *head,
                     bool descend)
 {
+    // printf("Before merge---\n");
+    // print_list(left);
+    // print_list(right);
+
     if (!left || !right || !head)
         return NULL;
     // struct list_head **ptr = &head;
@@ -249,8 +263,11 @@ void *mergeTwoLists(struct list_head *left,
                    : right;
         list_move_tail(node->next, head);
     }
-    list_splice(left, head);
-    list_splice(right, head);
+    list_splice_tail(left, head);
+    list_splice_tail(right, head);
+    // printf("after merge\n");
+    // print_list(head);
+    // getchar();
     return head;
 }
 
@@ -274,10 +291,16 @@ void merge_sort(struct list_head *head, bool descend)
         fast = fast->next->next;
         slow = slow->next;
     }
-    list_cut_position(&left, head, slow);
+    list_cut_position(&left, head, slow->prev);
     list_splice(head, &right);
+    // print_list(&left);
+    // print_list(&right);
+    // getchar();
     merge_sort(&left, descend);
     merge_sort(&right, descend);
+    // print_list(&left);
+    // print_list(&right);
+    // getchar();
     INIT_LIST_HEAD(head);
     mergeTwoLists(&left, &right, head, descend);
 }

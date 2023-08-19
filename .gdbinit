@@ -6,9 +6,7 @@ break mergeTwoLists
 define p_generic_list
   set var $n = $arg0->next
   while $n!=$arg0
-    print $n
-    print (element_t *) $n - 8
-    print (('element_t' *)($n - 8))->value
+    p /s (char *)((char) $n - sizeof(char *))
     set var $n = $n->next
   end
 end
